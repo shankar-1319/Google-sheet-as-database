@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Feedback</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background: #fff;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      text-align: center;
+      width: 300px;
+      animation: fadeIn 0.8s ease-in-out;
+    }
+
+    h1 {
+      margin-bottom: 25px;
+      font-size: 24px;
+      color: #2c3e50;
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+    }
+
+    .add-btn {
+      background: #27ae60;
+      color: white;
+    }
+
+    .add-btn:hover {
+      background: #219150;
+    }
+
+    .view-btn {
+      background: #2980b9;
+      color: white;
+    }
+
+    .view-btn:hover {
+      background: #1f6696;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Manage Feedback</h1>
+    <a href="googlesheet.html"><button class="add-btn">➕ Add Feedback</button></a>
+    <a href="readFromGoogleSheet.html"><button class="view-btn">📋 View All Responses</button></a>
+    <a href="findResponse.html"><button class="view-btn">📋 Find By Email</button></a>
+    <a href="edit_update.html"><button class="view-btn">📋 Update Details</button></a>
+  </div>
+</body>
+</html>

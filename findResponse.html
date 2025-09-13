@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Find My Response</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      text-align: center;
+      padding: 30px;
+    }
+    h2 {
+      color: #2c3e50;
+    }
+    input {
+      padding: 10px;
+      width: 250px;
+      margin-right: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      padding: 10px 15px;
+      border: none;
+      background: #2980b9;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #1f6696;
+    }
+    #error {
+      color: red;
+      font-weight: bold;
+      margin-top: 15px;
+    }
+    table {
+      width: 90%;
+      margin: 20px auto;
+      border-collapse: collapse;
+      background: #fff;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      border-radius: 10px;
+      overflow: hidden;
+      display: none;
+    }
+    th, td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+    th {
+      background: #2980b9;
+      color: #fff;
+    }
+    tr:nth-child(even) {
+      background: #f9f9f9;
+    }
+  </style>
+</head>
+<body>
+  <h2>Find My Response</h2>
+
+  <input type="email" id="emailInput" placeholder="Enter your email" />
+  <button onclick="findResponse()">Search</button>
+
+  <div id="error"></div>
+
+  <table id="resultTable">
+    <thead><tr id="tableHead"></tr></thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+
+  <script>
+    // 🔗 Replace with your deployment URL
+    const scriptURL = "https://script.google.com/macros/s/AKfycbznL_BqvxZJGYORbaBxVI-BUVk-f5uAg-xOGzCYXLjKrKYshm77xaS6bg2MNCeGh4_pUw/exec";
+
+    function findResponse() {
+      const email = document.getElementById("emailInput").value.trim();
+      const errorDiv = document.getElementById("error");
+      const table = document.getElementById("resultTable");
+      const tableHead = document.getElementById("tableHead");
+      const tableBody = document.getElementById("tableBody");
+
+      if (!email) {
+        errorDiv.innerText = "⚠ Please enter an email ID.";
+        table.style.display = "none";
+        return;
+      }
+
+      fetch(`${scriptURL}?email=${encodeURIComponent(email)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.length === 0) {
+            errorDiv.innerText = "❌ No records found for this email.";
+            table.style.display = "none";
+            return;
+          }
+
+          errorDiv.innerText = "";
+          tableHead.innerHTML = "";
+          tableBody.innerHTML = "";
+
+          // Headers
+          Object.keys(data[0]).forEach(key => {
+            let th = document.createElement("th");
+            th.innerText = key;
+            tableHead.appendChild(th);
+          });
+
+          // Rows
+          data.forEach(row => {
+            let tr = document.createElement("tr");
+            Object.values(row).forEach(val => {
+              let td = document.createElement("td");
+              td.innerText = val || "";
+              tr.appendChild(td);
+            });
+            tableBody.appendChild(tr);
+          });
+
+          table.style.display = "table";
+        })
+        .catch(err => {
+          errorDiv.innerText = "❌ Error fetching data: " + err.message;
+          table.style.display = "none";
+        });
+    }
+  </script>
+</body>
+</html>

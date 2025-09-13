@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Feedback Manager</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      background: #f5f7fa;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 10px;
+      color: #444;
+    }
+    .search-box {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    input[type="text"] {
+      padding: 8px;
+      width: 250px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    button.search-btn {
+      padding: 8px 12px;
+      margin-left: 5px;
+      border: none;
+      border-radius: 4px;
+      background: #2196F3;
+      color: white;
+      cursor: pointer;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    thead {
+      background: #4CAF50;
+      color: #fff;
+    }
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    tr:hover {
+      background: #f1f1f1;
+    }
+    button {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .edit-btn {
+      background: #2196F3;
+      color: white;
+      margin-right: 5px;
+    }
+    .save-btn {
+      background: #4CAF50;
+      color: white;
+      margin-right: 5px;
+    }
+    .delete-btn {
+      background: #f44336;
+      color: white;
+    }
+    #error {
+      margin-top: 15px;
+      color: red;
+      font-weight: bold;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h2>📋 Feedback Records</h2>
+
+  <div class="search-box">
+    <input type="text" id="searchEmail" placeholder="Enter email to search">
+    <button class="search-btn" onclick="filterByEmail()">Search</button>
+    <button class="search-btn" style="background:#4CAF50" onclick="loadFeedback()">Reset</button>
+  </div>
+
+  <table id="feedbackTable">
+    <thead>
+      <tr id="tableHead"></tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+  <div id="error"></div>
+
+  <script>
+    const scriptURL = "https://script.google.com/macros/s/AKfycbwoTmihOKkoBllN1mQMku-PEnaIzemBUmmbe8Q9kU5S-SfroQ2G8stFhAlc8j33RCP10Q/exec";
+    let allData = [];
+
+    async function loadFeedback() {
+      try {
+        const res = await fetch(scriptURL);
+        const data = await res.json();
+        if (!data || !data.length) {
+          document.getElementById("error").innerText = "No records found.";
+          return;
+        }
+        allData = data; // keep full copy
+        renderTable(allData);
+      } catch (err) {
+        document.getElementById("error").innerText = "Failed to load feedback: " + err;
+      }
+    }
+
+    function renderTable(data) {
+      if (!data.length) {
+        document.getElementById("error").innerText = "No matching records.";
+        document.getElementById("tableBody").innerHTML = "";
+        return;
+      }
+      document.getElementById("error").innerText = "";
+
+      const headers = Object.keys(data[0]).filter(h => h !== "_row");
+      const headRow = document.getElementById("tableHead");
+      headRow.innerHTML = "";
+      headers.forEach(h => {
+        const th = document.createElement("th");
+        th.innerText = h;
+        headRow.appendChild(th);
+      });
+      const actionTh = document.createElement("th");
+      actionTh.innerText = "Actions";
+      headRow.appendChild(actionTh);
+
+      const body = document.getElementById("tableBody");
+      body.innerHTML = "";
+      data.forEach((row) => {
+        const tr = document.createElement("tr");
+        tr.dataset.row = row["_row"];
+        headers.forEach(h => {
+          const td = document.createElement("td");
+          td.innerText = row[h] || "";
+          td.contentEditable = false;
+          tr.appendChild(td);
+        });
+
+        const tdAction = document.createElement("td");
+        const editBtn = document.createElement("button");
+        editBtn.innerText = "Edit";
+        editBtn.className = "edit-btn";
+        editBtn.onclick = () => enableEdit(tr, editBtn, headers);
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.innerText = "Delete";
+        deleteBtn.className = "delete-btn";
+        deleteBtn.onclick = () => deleteRow(tr.dataset.row);
+
+        tdAction.appendChild(editBtn);
+        tdAction.appendChild(deleteBtn);
+        tr.appendChild(tdAction);
+        body.appendChild(tr);
+      });
+    }
+
+    function filterByEmail() {
+      const email = document.getElementById("searchEmail").value.trim().toLowerCase();
+      if (!email) {
+        renderTable(allData);
+        return;
+      }
+      const filtered = allData.filter(r => 
+        r.Email && r.Email.toLowerCase().includes(email)
+      );
+      renderTable(filtered);
+    }
+
+    function enableEdit(tr, btn, headers) {
+      const tds = tr.querySelectorAll("td");
+      if (btn.innerText === "Edit") {
+        tds.forEach((td, i) => {
+          if (i < headers.length) td.contentEditable = true;
+        });
+        btn.innerText = "Save";
+        btn.className = "save-btn";
+      } else {
+        const updated = { _row: tr.dataset.row };
+        headers.forEach((h, i) => {
+          updated[h] = tds[i].innerText;
+        });
+        updateRow(updated);
+        btn.innerText = "Edit";
+        btn.className = "edit-btn";
+        tds.forEach((td, i) => {
+          if (i < headers.length) td.contentEditable = false;
+        });
+      }
+    }
+
+    async function updateRow(updated) {
+      try {
+        await fetch(scriptURL, {
+          method: "POST",
+          body: JSON.stringify({ action: "update", data: updated })
+        });
+        alert("Record updated successfully!");
+      } catch (err) {
+        alert("Failed to update: " + err);
+      }
+    }
+
+    async function deleteRow(rowNumber) {
+      if (!confirm("Are you sure you want to delete this record?")) return;
+      try {
+        await fetch(scriptURL, {
+          method: "POST",
+          body: JSON.stringify({ action: "delete", row: rowNumber })
+        });
+        alert("Record deleted successfully!");
+        loadFeedback();
+      } catch (err) {
+        alert("Failed to delete: " + err);
+      }
+    }
+
+    loadFeedback();
+  </script>
+</body>
+</html>
